@@ -7,17 +7,21 @@ const main = async () => {
   console.log("Smart contract deployed to -- ", waveContract.address);
   console.log("Smart contract owned by -- ", owner.address);
 
-  let waveCount = await waveContract.getWaveCount();
+  let waveCount = await waveContract.getTotalWaveCount();
 
   let waveTxn = await waveContract.wave();
   await waveTxn.wait();
 
-  waveCount = await waveContract.getWaveCount();
+  waveCount = await waveContract.getTotalWaveCount();
 
-  waveTxn = await waveContract.connect(randomPerson).wave();
-  await waveTxn.wait();
+  for (i = 0; i < 5; i++) {
+    waveTxn = await waveContract.connect(randomPerson).wave();
+    await waveTxn.wait();
+  }
 
-  waveCount = await waveContract.getWaveCount();
+  waveCount = await waveContract.getTotalWaveCount();
+
+  let randWaveCount = await waveContract.getWaveCountOf(randomPerson.address);
 };
 
 const runMain = async () => {
@@ -25,7 +29,7 @@ const runMain = async () => {
     await main();
     process.exit(0);
   } catch (error) {
-    console.log("Oops, there was an error -- ", error);
+    console.error("Oops, there was an error -- ", error);
     process.exit(1);
   }
 };

@@ -1,33 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { Container, Row, Col } from "react-bootstrap";
-import "bootstrap/dist/css/bootstrap.min.css";
+import "./App.css";
 
-function App() {
+export default function App() {
+  const wave = () => {};
+
   const [currentAccount, setCurrentAccount] = useState("");
 
   const checkIfWalletIsConnected = async () => {
-    try {
-      const { ethereum } = window;
+    const { ethereum } = window;
 
-      if (!ethereum) {
-        console.log("Make sure you have metamask!");
-        return;
-      } else {
-        console.log("We have the ethereum object", ethereum);
-      }
+    if (!ethereum) {
+      console.log("Make sure you have metamask enabled!");
+      return;
+    } else {
+      console.log("We have the ethereum object : ", ethereum);
+    }
 
-      const accounts = await ethereum.request({ method: "eth_accounts" });
+    const accounts = await ethereum.request({ method: "eth_accounts" });
 
-      if (accounts.length !== 0) {
-        const account = accounts[0];
-        console.log("Found an authorized account:", account);
-        setCurrentAccount(account);
-      } else {
-        console.log("No authorized account found");
-      }
-    } catch (error) {
-      console.log(error);
+    if (accounts.length === 0) {
+      console.log("No authorized account found");
+    } else {
+      const account = accounts[0];
+      console.log(`Found an authorized account : ${account}`);
+      setCurrentAccount(account);
     }
   };
 
@@ -40,8 +37,7 @@ function App() {
     }
 
     const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-
-    console.log(`Connected to account : ${accounts[0]}`);
+    console.log(`Connected to ${accounts[0]}`);
     setCurrentAccount(accounts[0]);
   };
 
@@ -50,24 +46,28 @@ function App() {
   }, []);
 
   return (
-    <div className="container">
-      <div className="row">
-        <div className="col-6 offset-3 text-center">
-          <h1 className="display-1 mt-5">
-            <strong>Hey there!</strong>
-          </h1>
+    <div className="mainContainer">
+      <div className="dataContainer">
+        <div className="header">👋 Hey there!</div>
 
-          <button className="btn btn-secondary my-4">Wave at me! 👋</button>
-
-          {!currentAccount && (
-            <button onClick={connectWallet} className="btn btn-primary">
-              Connect
-            </button>
-          )}
+        <div className="bio">
+          Hi, I'm Shreyas Londhe, a passionate self-taught frontend web
+          developer and a freelance software engineer from India. I am also an
+          Open-source and Blockchain enthusiast. I learned a lot from the
+          open-source community and I love how collaboration and knowledge
+          sharing happened through Open-source.
         </div>
+
+        <button className="waveButton" onClick={wave}>
+          Wave at Me
+        </button>
+
+        {!currentAccount && (
+          <button className="waveButton" onClick={connectWallet}>
+            Connect Wallet
+          </button>
+        )}
       </div>
     </div>
   );
 }
-
-export default App;

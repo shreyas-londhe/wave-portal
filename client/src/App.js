@@ -9,8 +9,10 @@ export default function App() {
   const [currentAccount, setCurrentAccount] = useState("");
   const [numberOfWaves, setNumberOfWaves] = useState(0);
   const [isMining, setIsMining] = useState(false);
+  const [allWaves, setAllWaves] = useState([]);
+  const [userMessage, setUserMessage] = useState("");
 
-  const contractAddress = "0x38603aB10F05671836474543207E94D490E53c42";
+  const contractAddress = "0xEAE903d2456692ea744de849F203eDa8Df406869";
   const contractABI = abi.abi;
 
   const checkIfWalletIsConnected = async () => {
@@ -31,6 +33,7 @@ export default function App() {
       const account = accounts[0];
       console.log(`Found an authorized account : ${account}`);
       setCurrentAccount(account);
+      getAllWaves();
     }
   };
 
@@ -59,7 +62,7 @@ export default function App() {
           contractABI,
           signer
         );
-        let count = await wavePortalContract.getTotalWaveCount();
+        let count = await wavePortalContract.getTotalWaves();
         console.log(
           `Retrieved total number of waves which is : ${count.toNumber()}`
         );
@@ -84,7 +87,13 @@ export default function App() {
           contractABI,
           signer
         );
-        let waveTxn = await wavePortalContract.wave();
+
+        console.log(userMessage);
+
+        // STEP 3: This as we're using react, we can do this in the v-dom :D
+        let waveTxn = await wavePortalContract.wave(userMessage);
+        setUserMessage("");
+        // STEP 4: Change message to our new state variable, in our case userMessage
         console.log(`Mining... ${waveTxn.hash}`);
         setIsMining(true);
 
@@ -92,7 +101,7 @@ export default function App() {
         console.log(`Mined -- ${waveTxn.hash}`);
         setIsMining(false);
 
-        let count = await wavePortalContract.getTotalWaveCount();
+        let count = await wavePortalContract.getTotalWaves();
         console.log(
           `Retrieved total number of waves which is : ${count.toNumber()}`
         );
@@ -102,6 +111,38 @@ export default function App() {
       }
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const getAllWaves = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const wavePortalContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+
+        const waves = await wavePortalContract.getAllWaves();
+        let wavesCleaned = [];
+
+        waves.forEach((wave) => {
+          wavesCleaned.push({
+            address: wave.waver,
+            timestamp: new Date(wave.timestamp * 1000),
+            message: wave.message,
+          });
+        });
+
+        setAllWaves(wavesCleaned);
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -125,6 +166,24 @@ export default function App() {
 
         <h3 className="m-5 text-center">Wave Count: {numberOfWaves}</h3>
 
+        <form>
+          <div className="mb-3">
+            <input
+              id="inputMessage"
+              type="text"
+              className="form-control"
+              required
+              onChange={(e) => setUserMessage(e.target.value)}
+            />
+          </div>
+
+          {!isMining && (
+            <button className="waveButton" onClick={wave}>
+              Wave at Me
+            </button>
+          )}
+        </form>
+
         {isMining && (
           <button className="btn btn-danger" type="button" disabled>
             <span
@@ -136,17 +195,28 @@ export default function App() {
           </button>
         )}
 
-        {!isMining && (
-          <button className="waveButton" onClick={wave}>
-            Wave at Me
-          </button>
-        )}
-
         {!currentAccount && (
           <button className="waveButton" onClick={connectWallet}>
             Connect Wallet
           </button>
         )}
+
+        {allWaves.map((wave, index) => {
+          return (
+            <div
+              key={index}
+              style={{
+                backgroundColor: "OldLace",
+                marginTop: "16px",
+                padding: "8px",
+              }}
+            >
+              <div>Address: {wave.address}</div>
+              <div>Time: {wave.timestamp.toString()}</div>
+              <div>Message: {wave.message}</div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -7,21 +7,22 @@ const main = async () => {
   console.log("Smart contract deployed to -- ", waveContract.address);
   console.log("Smart contract owned by -- ", owner.address);
 
-  let waveCount = await waveContract.getTotalWaveCount();
+  let waveCount = await waveContract.getTotalWaves();
 
-  let waveTxn = await waveContract.wave();
+  let waveTxn = await waveContract.wave("Message from owner");
   await waveTxn.wait();
 
-  waveCount = await waveContract.getTotalWaveCount();
+  waveCount = await waveContract.getTotalWaves();
 
   for (i = 0; i < 5; i++) {
-    waveTxn = await waveContract.connect(randomPerson).wave();
+    waveTxn = await waveContract
+      .connect(randomPerson)
+      .wave(`Message number ${i + 2}`);
     await waveTxn.wait();
   }
 
-  waveCount = await waveContract.getTotalWaveCount();
-
-  let randWaveCount = await waveContract.getWaveCountOf(randomPerson.address);
+  let waves = await waveContract.getAllWaves();
+  console.log(waves);
 };
 
 const runMain = async () => {

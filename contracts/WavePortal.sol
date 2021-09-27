@@ -3,27 +3,36 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 
 contract WavePortal {
-    mapping (address => uint256) waveLog;
-    uint256 totalWaveCount;
+    uint256 totalWaves;
+    event NewWave(address indexed from, uint256 timestamp, string message);
+
+    struct Wave {
+        address waver; // The address of the user who waved.
+        string message; // The message the user sent.
+        uint256 timestamp; // The timestamp when the user waved.
+    }
+
+    Wave[] waves;
 
     constructor() {
-        console.log("This is a contract and it's damn smart");
+        console.log("I am a contract, and I'm smart, bish");
+    }
+   
+    function wave(string memory _message) public {
+        totalWaves += 1;
+        console.log("%s has waved!", msg.sender);
+
+        waves.push(Wave(msg.sender, _message, block.timestamp));
+
+       
+        emit NewWave(msg.sender, block.timestamp, _message);
+    }
+  
+    function getAllWaves() public view returns (Wave[] memory) {
+        return waves;
     }
 
-    function wave() public {
-        waveLog[msg.sender] += 1;
-        totalWaveCount += 1;
-        console.log("%s just waved!!", msg.sender);
+    function getTotalWaves() public view returns (uint256) {
+        return totalWaves;
     }
-
-    function getWaveCountOf(address _caller) public view returns (uint256) {
-        console.log("%s has waved %d times.", _caller, waveLog[_caller]);
-        return waveLog[_caller];
-    }
-
-    function getTotalWaveCount() public view returns (uint256) {
-        console.log("%d people have waved till now.", totalWaveCount);
-        return totalWaveCount;
-    }
-
 }
